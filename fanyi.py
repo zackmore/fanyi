@@ -1,16 +1,14 @@
 # coding: utf-8
 #!/usr/bin/env python
-import pdb
 
 import requests
 import json
-import itertools
 import sys
 import os.path
 import re
 
-KEYFROM = 'cli-fanyi' # Your keyfrom string from youdao API
-KEY = '779705974'         # Your API key string from youdao API
+KEYFROM = ''    # Your keyfrom string from youdao API
+KEY = ''        # Your API key string from youdao API
 APIURL = 'http://fanyi.youdao.com/openapi.do?keyfrom=%s&key=%s&type=data&doctype=json&version=1.1&q='
 LOCALFILE = True
 LOCALFILEPATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
