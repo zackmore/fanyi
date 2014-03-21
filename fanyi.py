@@ -1,5 +1,5 @@
+#!/usr/bin/python
 # coding: utf-8
-#!/usr/bin/env python
 
 import requests
 import json
@@ -9,17 +9,18 @@ import re
 
 KEYFROM = ''    # Your keyfrom string from youdao API
 KEY = ''        # Your API key string from youdao API
-APIURL = 'http://fanyi.youdao.com/openapi.do?keyfrom=%s&key=%s&type=data&doctype=json&version=1.1&q='
+APIURL = 'http://fanyi.youdao.com/openapi.do?keyfrom=%s&key=%s&\
+        type=data&doctype=json&version=1.1&q='
 LOCALFILE = True
-LOCALFILEPATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                            'wordlist.txt'))
+LOCALFILEPATH = '/path/to/wordlist.txt'
 
 class Fanyi(object):
     def __init__(self, word):
         self.word = word
         self.keyfrom = KEYFROM
         self.key = KEY
-        self.request_url = APIURL % (self.keyfrom, self.key) + word.strip().lower()
+        self.request_url = APIURL % (self.keyfrom, self.key) +\
+                            word.strip().lower()
 
     def lookup(self):
         if LOCALFILE:
@@ -104,7 +105,7 @@ class Fanyi(object):
             word=self.data['query'],
             translation=' '.join([mean for mean in self.data['translation']]),
             pronounce='[' + self.data['basic']['phonetic'] + ']',
-            explains='\n'.join([mean for mean in self.data['basic']['explains']]),
+            explains='\n'.join([m for m in self.data['basic']['explains']]),
             webs=webs,
         )
 
@@ -132,8 +133,8 @@ u'''
     def _local_output_string(self, local_word):
         # Parse the word paragraph
         lines = local_word.split('\n')
-        word = self.word
-        pronounce = lines[0].split()[-1]
+        word = lines[0].split()[0]
+        pronounce = ' '.join(lines[0].split()[1:])
 
         pattern = re.compile(ur'\u3010([\u4e00-\u9fa5]+)\u3011')
         defs = lines[1:]
@@ -155,15 +156,17 @@ u'''
 
         # Form the output
         output_string = '\n'
-        output_string += self._colored_string(word, 'red')
+        output_string += self._colored_string('%s', 'red') % word
         output_string += ' '
-        output_string += self._colored_string(pronounce, 'gray')
+        output_string += self._colored_string('%s', 'gray') % pronounce
 
         for k, v in definitions.items():
             output_string += '\n\n'
-            output_string += self._colored_string(k, 'blue')
+            output_string += self._colored_string('%s', 'blue') % k
             output_string += '\n'
             output_string += '\n'.join(v)
+
+
 
         print output_string
 
@@ -222,6 +225,7 @@ def main(word):
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print 'give a word'
+        sys.exit(1)
     else:
         word = sys.argv[1]
     main(word)
