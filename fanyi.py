@@ -6,21 +6,20 @@ import json
 import sys
 import os.path
 import re
+import subprocess
 
 KEYFROM = ''    # Your keyfrom string from youdao API
 KEY = ''        # Your API key string from youdao API
-APIURL = 'http://fanyi.youdao.com/openapi.do?keyfrom=%s&key=%s&\
-        type=data&doctype=json&version=1.1&q='
-LOCALFILE = True
-LOCALFILEPATH = '/path/to/wordlist.txt'
+APIURL = 'http://fanyi.youdao.com/openapi.do?keyfrom=%s&key=%s&type=data&doctype=json&version=1.1&q='
+LOCALFILE = False
+LOCALFILEPATH = ''
 
 class Fanyi(object):
     def __init__(self, word):
         self.word = word
         self.keyfrom = KEYFROM
         self.key = KEY
-        self.request_url = APIURL % (self.keyfrom, self.key) +\
-                            word.strip().lower()
+        self.request_url = APIURL % (self.keyfrom, self.key) + word.strip().lower()
 
     def lookup(self):
         if LOCALFILE:
@@ -105,7 +104,7 @@ class Fanyi(object):
             word=self.data['query'],
             translation=' '.join([mean for mean in self.data['translation']]),
             pronounce='[' + self.data['basic']['phonetic'] + ']',
-            explains='\n'.join([m for m in self.data['basic']['explains']]),
+            explains='\n'.join([mean for mean in self.data['basic']['explains']]),
             webs=webs,
         )
 
@@ -228,4 +227,11 @@ if __name__ == '__main__':
         sys.exit(1)
     else:
         word = sys.argv[1]
-    main(word)
+        if word == '-l':
+            if LOCALFILE:
+                subprocess.call(['less', LOCALFILEPATH])
+                sys.exit(0)
+            else:
+                print 'You should set LOCALFILE true to view local wordlist.'
+                sys.exit(1)
+        main(word)
