@@ -6,13 +6,17 @@ import json
 import sys
 import os.path
 import re
+import cPickle
+import operator
 import subprocess
 
 KEYFROM = ''    # Your keyfrom string from youdao API
 KEY = ''        # Your API key string from youdao API
 APIURL = 'http://fanyi.youdao.com/openapi.do?keyfrom=%s&key=%s&type=data&doctype=json&version=1.1&q='
-LOCALFILE = False
-LOCALFILEPATH = ''
+LOCALFILE = True
+LOCALFILEPATH = '/path/to/wordlist.txt'
+RANKFILE = True
+RANKFILEPATH = '/path/to/rank.pickle'
 
 class Fanyi(object):
     def __init__(self, word):
@@ -26,6 +30,24 @@ class Fanyi(object):
             self._local_lookup()
         else:
             self._web_lookup()
+
+        if RANKFILE:
+            if not os.path.exists(RANKFILEPATH):
+                try:
+                    picklefile = open(RANKFILEPATH, 'w')
+                    cPickle.dump({}, picklefile)
+                    picklefile.close()
+                except IOError as e:
+                    print('Failed at create rank file. Error: %s' % e)
+                    sys.exit(1)
+        
+            self.rank_dict = cPickle.load(open(RANKFILEPATH))
+
+            if word not in self.rank_dict.keys():
+                self.rank_dict[word] = 0
+            self.rank_dict[word] += 1
+                        
+            cPickle.dump(self.rank_dict, open(RANKFILEPATH, 'w'))
 
     def _web_lookup(self):
         self.result = requests.get(self.request_url)
@@ -165,8 +187,6 @@ u'''
             output_string += '\n'
             output_string += '\n'.join(v)
 
-
-
         print output_string
 
     def _web_output_string(self):
@@ -215,7 +235,7 @@ u'''
     def save_to_local(self):
         with open(LOCALFILEPATH, 'a') as wordlist:
             wordlist.write(self._result_string().encode('utf-8'))
-        
+
 
 def main(word):
     fanyi = Fanyi(word)
@@ -226,7 +246,7 @@ if __name__ == '__main__':
         print 'give a word'
         sys.exit(1)
     else:
-        word = sys.argv[1]
+        word = sys.argv[1].strip().encode('utf-8')            
         if word == '-l':
             if LOCALFILE:
                 subprocess.call(['less', LOCALFILEPATH])
@@ -234,4 +254,14 @@ if __name__ == '__main__':
             else:
                 print 'You should set LOCALFILE true to view local wordlist.'
                 sys.exit(1)
-        main(word)
+        elif word == '-r':
+            if RANKFILE:
+                rank_dict = cPickle.load(open(RANKFILEPATH))
+                sorted_rank = sorted(rank_dict.iteritems(), key=operator.itemgetter(1), reverse=True)
+                for item in sorted_rank:
+                    print str(item[1]) + '    ' + str(item[0])
+            else:
+                print 'You should set RANKFILE true to view word search ranks.'
+                sys.exit(1)
+        else:
+            main(word)
