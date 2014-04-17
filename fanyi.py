@@ -246,7 +246,7 @@ if __name__ == '__main__':
         print 'give a word'
         sys.exit(1)
     else:
-        word = sys.argv[1].strip().encode('utf-8')            
+        word = sys.argv[1].strip()            
         if word == '-l':
             if LOCALFILE:
                 subprocess.call(['less', LOCALFILEPATH])
