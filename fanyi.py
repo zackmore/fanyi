@@ -125,8 +125,8 @@ class Fanyi(object):
         self.result_dict = dict(
             word=self.data['query'],
             translation=' '.join([mean for mean in self.data['translation']]),
-            pronounce='[' + self.data['basic']['phonetic'] + ']',
-            explains='\n'.join([mean for mean in self.data['basic']['explains']]),
+            pronounce='[' + self.data['basic']['phonetic'] + ']' if self.data['basic'].has_key('phonetic') else '',
+            explains='\n'.join([mean for mean in self.data['basic']['explains']]) if self.data['basic'].has_key('explains') else '',
             webs=webs,
         )
 
